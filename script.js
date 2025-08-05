@@ -1,6 +1,11 @@
 // Initialize GSAP and register plugins
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
+// Initialize EmailJS
+(function() {
+    emailjs.init("YOUR_USER_ID"); // Replace with your EmailJS user ID
+})();
+
 // DOM Content Loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all functionality
@@ -388,7 +393,7 @@ function initContactForm() {
         
         // Basic validation
         if (validateForm(data)) {
-            // Simulate form submission
+            // Send email using EmailJS
             submitForm(data);
         }
     });
@@ -490,8 +495,17 @@ function submitForm(data) {
     submitButton.textContent = 'Sending...';
     submitButton.disabled = true;
     
-    // Simulate API call
-    setTimeout(() => {
+    // Send email using EmailJS
+    emailjs.send('service_id', 'template_id', {
+        from_name: data.name,
+        from_email: data.email,
+        subject: data.subject,
+        message: data.message,
+        to_email: 'deepanshujaat309@gmail.com'
+    })
+    .then(function(response) {
+        console.log('SUCCESS!', response.status, response.text);
+        
         // Reset form
         document.getElementById('contact-form').reset();
         
@@ -506,7 +520,17 @@ function submitForm(data) {
         document.querySelectorAll('.form-group').forEach(group => {
             group.classList.remove('focused');
         });
-    }, 2000);
+    })
+    .catch(function(error) {
+        console.log('FAILED...', error);
+        
+        // Reset button
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
+        
+        // Show error message
+        showNotification('Failed to send message. Please try again or contact me directly.', 'error');
+    });
 }
 
 function showNotification(message, type = 'info') {
